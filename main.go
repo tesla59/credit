@@ -47,7 +47,7 @@ func main() {
 
 	for update := range updates {
 		
-		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+	//	log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 		
 		if update.Message == nil || update.Message.ReplyToMessage == nil { // ignore any non-Message Updates + any non replied message
 			continue
@@ -72,13 +72,13 @@ func main() {
 				_ = db.First(&user,update.Message.ReplyToMessage.From.ID)
 				user.Credit += 20
 				db.Save(&user)
-				reply = "<code>+20 Credit Comrade!\nYour Total Balance is " + fmt.Sprint(user.Credit) + "</code>"
+				reply = "<code>+20</code> Credit, Citizen!\nYou have <code>" + fmt.Sprint(user.Credit) + "</code> points."
 				user = User{}
 			}else if update.Message.Text == "-" {
 				_ = db.First(&user,update.Message.ReplyToMessage.From.ID)
 				user.Credit -= 20
 				db.Save(&user)
-				reply = "<code>-20 Credit Comrade!\nYour Total Balance is " + fmt.Sprint(user.Credit) + "</code>"
+				reply = "<code>-20</code> Credit, Citizen!\nYou have <code>" + fmt.Sprint(user.Credit) + "</code> points."
 				user = User{}
 			}
 			msg = tgbotapi.NewMessage(update.Message.Chat.ID,reply)
