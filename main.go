@@ -24,10 +24,13 @@ func Check(e error) {
 }
 
 func main() {
-	var msg tgbotapi.MessageConfig
-	var user User
-	var reply string
+	var (
+		msg tgbotapi.MessageConfig
+		user User
+		reply string
+	)
 
+	// Bot and DB configs
 	bot, err := tgbotapi.NewBotAPI("2060607324:AAE5iuIQiW7XkCALG9ZFsbjKxG1-UMWS10Q")
 	Check(err)
 	db, err := gorm.Open(sqlite.Open("main.db"), &gorm.Config{})
@@ -41,21 +44,16 @@ func main() {
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
-
 	updates, err := bot.GetUpdatesChan(u)
 	Check(err)
 
 	for update := range updates {
-		
-	//	log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-		
 		if update.Message == nil || update.Message.ReplyToMessage == nil { // ignore any non-Message Updates + any non replied message
 			continue
 		}
 
 		if (update.Message.Text == "+" || update.Message.Text == "-") && (update.Message.From.ID != update.Message.ReplyToMessage.From.ID) && !update.Message.ReplyToMessage.From.IsBot {
 			// Check if user_id already exist in db
-
 			result := db.First(&user, update.Message.ReplyToMessage.From.ID);
 			if result.Error != nil {
 				// Adding entry if user doesnt exist
