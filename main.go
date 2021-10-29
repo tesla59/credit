@@ -31,7 +31,7 @@ func main() {
 	)
 
 	// Bot and DB configs
-	bot, err := tgbotapi.NewBotAPI("2060607324:AAE5iuIQiW7XkCALG9ZFsbjKxG1-UMWS10Q")
+	bot, err := tgbotapi.NewBotAPI("2089036006:AAGHPgwi9kgVRJB1laPjkod6cnZWtSm5IlE")
 	Check(err)
 	db, err := gorm.Open(sqlite.Open("main.db"), &gorm.Config{})
 	Check(err)
