@@ -10,7 +10,8 @@ import (
 )
 
 type User struct {
-	User_id    int `gorm:"primaryKey"`
+	User_id    int   `gorm:"primaryKey"`
+	Chat_id    int64 `gorm:"primaryKey"`
 	First_name string
 	Last_name  string
 	Username   string
@@ -25,8 +26,8 @@ func Check(e error) {
 
 func main() {
 	var (
-		msg tgbotapi.MessageConfig
-		user User
+		msg   tgbotapi.MessageConfig
+		user  User
 		reply string
 	)
 
@@ -54,33 +55,35 @@ func main() {
 
 		if (update.Message.Text == "+" || update.Message.Text == "-") && (update.Message.From.ID != update.Message.ReplyToMessage.From.ID) && !update.Message.ReplyToMessage.From.IsBot {
 			// Check if user_id already exist in db
-			result := db.First(&user, update.Message.ReplyToMessage.From.ID);
+			result := db.First(&user, update.Message.ReplyToMessage.From.ID, update.Message.Chat.ID)
 			if result.Error != nil {
 				// Adding entry if user doesnt exist
 				db.Create(&User{
 					User_id:    update.Message.ReplyToMessage.From.ID,
+					Chat_id:    update.Message.ReplyToMessage.Chat.ID,
 					First_name: update.Message.ReplyToMessage.From.FirstName,
 					Last_name:  update.Message.ReplyToMessage.From.LastName,
 					Username:   update.Message.ReplyToMessage.From.UserName,
 					Credit:     0,
 				})
+				user = User{}
 			}
 
 			if update.Message.Text == "+" {
-				_ = db.First(&user,update.Message.ReplyToMessage.From.ID)
+				_ = db.First(&user, update.Message.ReplyToMessage.From.ID, update.Message.ReplyToMessage.Chat.ID)
 				user.Credit += 20
 				db.Save(&user)
 				reply = "<code>+20</code> Credit, Citizen!\nYou have <code>" + fmt.Sprint(user.Credit) + "</code> points."
 				user = User{}
-			}else if update.Message.Text == "-" {
-				_ = db.First(&user,update.Message.ReplyToMessage.From.ID)
+			} else if update.Message.Text == "-" {
+				_ = db.First(&user, update.Message.ReplyToMessage.From.ID, update.Message.ReplyToMessage.Chat.ID)
 				user.Credit -= 20
 				db.Save(&user)
 				reply = "<code>-20</code> Credit, Citizen!\nYou have <code>" + fmt.Sprint(user.Credit) + "</code> points."
 				user = User{}
 			}
-			msg = tgbotapi.NewMessage(update.Message.Chat.ID,reply)
-			msg.ParseMode=tgbotapi.ModeHTML
+			msg = tgbotapi.NewMessage(update.Message.Chat.ID, reply)
+			msg.ParseMode = tgbotapi.ModeHTML
 			msg.ReplyToMessageID = update.Message.ReplyToMessage.MessageID
 			bot.Send(msg)
 		}
