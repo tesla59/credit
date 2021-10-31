@@ -26,9 +26,9 @@ func Check(e error) {
 
 func main() {
 	var (
-		msg tgbotapi.MessageConfig
-		user User
-		reply string
+		msg       tgbotapi.MessageConfig
+		user      User
+		reply     string
 		flushMode bool = false
 	)
 
@@ -36,7 +36,7 @@ func main() {
 	config, err := ini.Load("config.ini")
 	Check(err)
 	token := config.Section("").Key("token").String()
-	if token == ""{
+	if token == "" {
 		panic("Please Enter Token")
 	}
 
@@ -65,13 +65,13 @@ func main() {
 		}
 
 		// Ignore all old messages
-		if flushMode { 
+		if flushMode {
 			continue
 		}
 
 		if (update.Message.Text == "+" || update.Message.Text == "-") && (update.Message.From.ID != update.Message.ReplyToMessage.From.ID) && !update.Message.ReplyToMessage.From.IsBot {
 			// Check if user_id already exist in db
-			result := db.First(&user, update.Message.ReplyToMessage.From.ID);
+			result := db.First(&user, update.Message.ReplyToMessage.From.ID)
 			if result.Error != nil {
 				// Adding entry if user doesnt exist
 				db.Create(&User{
@@ -84,20 +84,20 @@ func main() {
 			}
 
 			if update.Message.Text == "+" {
-				_ = db.First(&user,update.Message.ReplyToMessage.From.ID)
+				_ = db.First(&user, update.Message.ReplyToMessage.From.ID)
 				user.Credit += 20
 				db.Save(&user)
 				reply = "<code>+20</code> Credit, Citizen!\nYou have <code>" + fmt.Sprint(user.Credit) + "</code> points."
 				user = User{}
-			}else if update.Message.Text == "-" {
-				_ = db.First(&user,update.Message.ReplyToMessage.From.ID)
+			} else if update.Message.Text == "-" {
+				_ = db.First(&user, update.Message.ReplyToMessage.From.ID)
 				user.Credit -= 20
 				db.Save(&user)
 				reply = "<code>-20</code> Credit, Citizen!\nYou have <code>" + fmt.Sprint(user.Credit) + "</code> points."
 				user = User{}
 			}
-			msg = tgbotapi.NewMessage(update.Message.Chat.ID,reply)
-			msg.ParseMode=tgbotapi.ModeHTML
+			msg = tgbotapi.NewMessage(update.Message.Chat.ID, reply)
+			msg.ParseMode = tgbotapi.ModeHTML
 			msg.ReplyToMessageID = update.Message.ReplyToMessage.MessageID
 			bot.Send(msg)
 		}
