@@ -29,6 +29,7 @@ func main() {
 		msg tgbotapi.MessageConfig
 		user User
 		reply string
+		flushMode bool = false
 	)
 
 	// Reading from cnofig.ini
@@ -49,6 +50,7 @@ func main() {
 	_ = db.AutoMigrate(&User{})
 
 	// bot.Debug = true
+	// flushMode = true
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 	u := tgbotapi.NewUpdate(0)
@@ -57,7 +59,13 @@ func main() {
 	Check(err)
 
 	for update := range updates {
-		if update.Message == nil || update.Message.ReplyToMessage == nil { // ignore any non-Message Updates + any non replied message
+		// ignore any non-Message Updates + any non replied message
+		if update.Message == nil || update.Message.ReplyToMessage == nil {
+			continue
+		}
+
+		// Ignore all old messages
+		if flushMode { 
 			continue
 		}
 
