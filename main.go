@@ -126,5 +126,7 @@ func main() {
 		}
 		// Send the final Message
 		bot.Send(msg)
+		// Flush the last message
+		msg = tgbotapi.MessageConfig{}
 	}
 }
