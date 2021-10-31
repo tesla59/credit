@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
+	gopkg.in/ini.v1 v1.63.2
 	gorm.io/driver/sqlite v1.2.0
 	gorm.io/gorm v1.22.0
 )

@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/go-telegram-bot-api/telegram-bot-api"
+	"gopkg.in/ini.v1"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -30,8 +31,16 @@ func main() {
 		reply string
 	)
 
+	// Reading from cnofig.ini
+	config, err := ini.Load("config.ini")
+	Check(err)
+	token := config.Section("").Key("token").String()
+	if token == ""{
+		panic("Please Enter Token")
+	}
+
 	// Bot and DB configs
-	bot, err := tgbotapi.NewBotAPI("2089036006:AAGHPgwi9kgVRJB1laPjkod6cnZWtSm5IlE")
+	bot, err := tgbotapi.NewBotAPI(token)
 	Check(err)
 	db, err := gorm.Open(sqlite.Open("main.db"), &gorm.Config{})
 	Check(err)
