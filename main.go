@@ -26,6 +26,10 @@ func Check(e error) {
 	}
 }
 
+func markup(text string) string {
+	return "<code>" + text + "</code>"
+}
+
 func main() {
 	var (
 		msg       tgbotapi.MessageConfig
@@ -89,13 +93,13 @@ func main() {
 				_ = db.First(&user, update.Message.ReplyToMessage.From.ID)
 				user.Credit += 20
 				db.Save(&user)
-				reply = "<code>+20</code> Credit, Citizen!\nYou have <code>" + fmt.Sprint(user.Credit) + "</code> points."
+				reply = markup("+20") + " Credit, Citizen!\nYou have " + markup(fmt.Sprint(user.Credit)) + " points"
 				user = User{}
 			} else if update.Message.Text == "-" {
 				_ = db.First(&user, update.Message.ReplyToMessage.From.ID)
 				user.Credit -= 20
 				db.Save(&user)
-				reply = "<code>-20</code> Credit, Citizen!\nYou have <code>" + fmt.Sprint(user.Credit) + "</code> points."
+				reply = markup("-20") + " Credit, Citizen!\nYou have " + markup(fmt.Sprint(user.Credit)) + " points."
 				user = User{}
 			}
 			msg = tgbotapi.NewMessage(update.Message.Chat.ID, reply)
@@ -104,7 +108,7 @@ func main() {
 		}
 
 		// Commands
-		if update.Message.IsCommand() && (strings.Contains(update.Message.Text,"@") == strings.Contains(update.Message.Text,bot.Self.UserName)) {
+		if update.Message.IsCommand() && (strings.Contains(update.Message.Text, "@") == strings.Contains(update.Message.Text, bot.Self.UserName)) {
 			if update.Message.Text == "/ping" {
 				pinger, err := ping.NewPinger("www.google.com")
 				Check(err)
@@ -113,9 +117,9 @@ func main() {
 				Check(err)
 
 				stats := pinger.Statistics()
-				text := "Results: " + fmt.Sprint(stats.AvgRtt)
+				text := "Result: " + markup(fmt.Sprint(stats.AvgRtt))
 
-				msg = tgbotapi.NewMessage(update.Message.Chat.ID,text)
+				msg = tgbotapi.NewMessage(update.Message.Chat.ID, text)
 				msg.ParseMode = tgbotapi.ModeHTML
 				msg.ReplyToMessageID = update.Message.MessageID
 			}
