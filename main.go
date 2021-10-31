@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
+	"strings"
 
+	"github.com/go-ping/ping"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"gopkg.in/ini.v1"
 	"gorm.io/driver/sqlite"
@@ -99,8 +101,26 @@ func main() {
 			msg = tgbotapi.NewMessage(update.Message.Chat.ID, reply)
 			msg.ParseMode = tgbotapi.ModeHTML
 			msg.ReplyToMessageID = update.Message.ReplyToMessage.MessageID
-			bot.Send(msg)
 		}
 
+		// Commands
+		if update.Message.IsCommand() && (strings.Contains(update.Message.Text,"@") == strings.Contains(update.Message.Text,bot.Self.UserName)) {
+			if update.Message.Text == "/ping" {
+				pinger, err := ping.NewPinger("www.google.com")
+				Check(err)
+				pinger.Count = 5
+				err = pinger.Run() // Blocks until finished.
+				Check(err)
+
+				stats := pinger.Statistics()
+				text := "Results: " + fmt.Sprint(stats.AvgRtt)
+
+				msg = tgbotapi.NewMessage(update.Message.Chat.ID,text)
+				msg.ParseMode = tgbotapi.ModeHTML
+				msg.ReplyToMessageID = update.Message.MessageID
+			}
+		}
+		// Send the final Message
+		bot.Send(msg)
 	}
 }
