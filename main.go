@@ -12,25 +12,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type User struct {
-	User_id    int `gorm:"primaryKey;autoIncrement:false"`
-	Chat_id    int64 `gorm:"primaryKey;autoIncrement:false"`
-	First_name string
-	Last_name  string
-	Username   string
-	Credit     int
-}
-
-func Check(e error) {
-	if e != nil {
-		panic(e)
-	}
-}
-
-func markup(text string) string {
-	return "<code>" + text + "</code>"
-}
-
 func main() {
 	var (
 		msg   tgbotapi.MessageConfig
@@ -96,10 +77,10 @@ func main() {
 			db.Where(&User{User_id: update.Message.ReplyToMessage.From.ID, Chat_id: update.Message.Chat.ID}).First(&user)
 			if update.Message.Text == "+" {
 				user.Credit += 20
-				reply = markup("+20") + " Credit, Citizen!\nYou have " + markup(fmt.Sprint(user.Credit)) + " points"
+				reply = Markup("+20") + " Credit, Citizen!\nYou have " + Markup(fmt.Sprint(user.Credit)) + " points"
 			} else if update.Message.Text == "-" {
 				user.Credit -= 20
-				reply = markup("-20") + " Credit, Citizen!\nYou have " + markup(fmt.Sprint(user.Credit)) + " points."
+				reply = Markup("-20") + " Credit, Citizen!\nYou have " + Markup(fmt.Sprint(user.Credit)) + " points."
 			}
 			db.Save(&user)
 			user = User{}
@@ -119,7 +100,7 @@ func main() {
 				Check(err)
 
 				stats := pinger.Statistics()
-				text := "Result: " + markup(fmt.Sprint(stats.AvgRtt))
+				text := "Result: " + Markup(fmt.Sprint(stats.AvgRtt))
 
 				msg = tgbotapi.NewMessage(update.Message.Chat.ID, text)
 				msg.ParseMode = tgbotapi.ModeHTML
