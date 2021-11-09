@@ -35,13 +35,13 @@ func main() {
 		msg       tgbotapi.MessageConfig
 		user      User
 		reply     string
-		flushMode bool = false
 	)
 
 	// Reading from cnofig.ini
 	config, err := ini.Load("config.ini")
 	Check(err)
 	token := config.Section("").Key("token").String()
+	flushMode := config.Section("").Key("flushMode").MustBool(false)
 	if token == "" {
 		panic("Please Enter Token")
 	}
