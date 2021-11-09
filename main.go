@@ -13,7 +13,8 @@ import (
 )
 
 type User struct {
-	User_id    int `gorm:"primaryKey"`
+	User_id    int `gorm:"primaryKey;autoIncrement:false"`
+	Chat_id    int64 `gorm:"primaryKey;autoIncrement:false"`
 	First_name string
 	Last_name  string
 	Username   string
@@ -32,16 +33,19 @@ func markup(text string) string {
 
 func main() {
 	var (
-		msg       tgbotapi.MessageConfig
-		user      User
-		reply     string
+		msg   tgbotapi.MessageConfig
+		user  User
+		reply string
 	)
 
 	// Reading from cnofig.ini
 	config, err := ini.Load("config.ini")
 	Check(err)
 	token := config.Section("").Key("token").String()
-	flushMode := config.Section("").Key("flushMode").MustBool(false)
+
+	flushMode, err := config.Section("").Key("flushMode").Bool()
+	Check(err)
+
 	if token == "" {
 		panic("Please Enter Token")
 	}
@@ -56,7 +60,6 @@ func main() {
 	_ = db.AutoMigrate(&User{})
 
 	// bot.Debug = true
-	// flushMode = true
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 	u := tgbotapi.NewUpdate(0)
@@ -77,11 +80,12 @@ func main() {
 
 		if (update.Message.Text == "+" || update.Message.Text == "-") && (update.Message.From.ID != update.Message.ReplyToMessage.From.ID) && !update.Message.ReplyToMessage.From.IsBot {
 			// Check if user_id already exist in db
-			result := db.First(&user, update.Message.ReplyToMessage.From.ID)
+			result := db.Where(&User{User_id: update.Message.ReplyToMessage.From.ID, Chat_id: update.Message.Chat.ID}).First(&user)
 			if result.Error != nil {
 				// Adding entry if user doesnt exist
 				db.Create(&User{
 					User_id:    update.Message.ReplyToMessage.From.ID,
+					Chat_id:    update.Message.Chat.ID,
 					First_name: update.Message.ReplyToMessage.From.FirstName,
 					Last_name:  update.Message.ReplyToMessage.From.LastName,
 					Username:   update.Message.ReplyToMessage.From.UserName,
@@ -89,19 +93,17 @@ func main() {
 				})
 			}
 
+			db.Where(&User{User_id: update.Message.ReplyToMessage.From.ID, Chat_id: update.Message.Chat.ID}).First(&user)
 			if update.Message.Text == "+" {
-				_ = db.First(&user, update.Message.ReplyToMessage.From.ID)
 				user.Credit += 20
-				db.Save(&user)
 				reply = markup("+20") + " Credit, Citizen!\nYou have " + markup(fmt.Sprint(user.Credit)) + " points"
-				user = User{}
 			} else if update.Message.Text == "-" {
-				_ = db.First(&user, update.Message.ReplyToMessage.From.ID)
 				user.Credit -= 20
-				db.Save(&user)
 				reply = markup("-20") + " Credit, Citizen!\nYou have " + markup(fmt.Sprint(user.Credit)) + " points."
-				user = User{}
 			}
+			db.Save(&user)
+			user = User{}
+
 			msg = tgbotapi.NewMessage(update.Message.Chat.ID, reply)
 			msg.ParseMode = tgbotapi.ModeHTML
 			msg.ReplyToMessageID = update.Message.ReplyToMessage.MessageID
