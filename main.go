@@ -49,17 +49,28 @@ func main() {
 	Check(err)
 
 	for update := range updates {
-		// ignore any non-Message Updates + any non replied message
-		if update.Message == nil || update.Message.ReplyToMessage == nil {
+
+		// This variable states if the message is a reply to something or not
+		// Since attempting to perform operaion on ReplyTo variable are considered nill pointer dereferencing if the message wasnt actually a reply
+		// Will find better way to implement later
+		msgIsAReply := func() bool {
+			if update.Message.ReplyToMessage == nil {
+				return false
+			} else {
+				return true
+			}
+		}()
+
+		// ignore any non-Message Updates
+		if update.Message == nil {
 			continue
 		}
-
 		// Ignore all old messages
 		if flushMode {
 			continue
 		}
 
-		if (update.Message.Text == "+" || update.Message.Text == "-") && (update.Message.From.ID != update.Message.ReplyToMessage.From.ID) && !update.Message.ReplyToMessage.From.IsBot {
+		if msgIsAReply && (update.Message.Text == "+" || update.Message.Text == "-") && (update.Message.From.ID != update.Message.ReplyToMessage.From.ID) && !update.Message.ReplyToMessage.From.IsBot {
 			// Check if user_id already exist in db
 			result := db.Where(&User{User_id: update.Message.ReplyToMessage.From.ID, Chat_id: update.Message.Chat.ID}).First(&user)
 			if result.Error != nil {
