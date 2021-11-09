@@ -108,8 +108,8 @@ func main() {
 		}
 
 		// Commands
-		if update.Message.IsCommand() && (strings.Contains(update.Message.Text, "@") == strings.Contains(update.Message.Text, bot.Self.UserName)) {
-			if update.Message.Text == "/ping" {
+		if update.Message.IsCommand() && strings.Contains(update.Message.Text, "@") == strings.Contains(update.Message.Text, bot.Self.UserName) {
+			if update.Message.Command() == "ping" {
 				pinger, err := ping.NewPinger("www.google.com")
 				Check(err)
 				pinger.Count = 5
