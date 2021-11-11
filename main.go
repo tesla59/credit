@@ -50,6 +50,11 @@ func main() {
 
 	for update := range updates {
 
+		// Ignore all old messages
+		if flushMode {
+			continue
+		}
+
 		// This variable states if the message is a reply to something or not
 		// Since attempting to perform operaion on ReplyTo variable are considered nill pointer dereferencing if the message wasnt actually a reply
 		// Will find better way to implement later
@@ -63,10 +68,6 @@ func main() {
 
 		// ignore any non-Message Updates
 		if update.Message == nil {
-			continue
-		}
-		// Ignore all old messages
-		if flushMode {
 			continue
 		}
 
