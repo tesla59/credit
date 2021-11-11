@@ -19,7 +19,7 @@ func main() {
 		reply string
 	)
 
-	// Reading from cnofig.ini
+	// Reading from config.ini
 	config, err := ini.Load("config.ini")
 	Check(err)
 	token := config.Section("").Key("token").String()
@@ -56,7 +56,7 @@ func main() {
 		}
 
 		// This variable states if the message is a reply to something or not
-		// Since attempting to perform operaion on ReplyTo variable are considered nill pointer dereferencing if the message wasnt actually a reply
+		// Since attempting to perform operaion on ReplyTo variable are considered nill pointer dereferencing if the message wasn't actually a reply
 		// Will find better way to implement later
 		msgIsAReply := func() bool {
 			if update.Message.ReplyToMessage == nil {
@@ -72,21 +72,21 @@ func main() {
 		}
 
 		if msgIsAReply && (update.Message.Text == "+" || update.Message.Text == "-") && (update.Message.From.ID != update.Message.ReplyToMessage.From.ID) && !update.Message.ReplyToMessage.From.IsBot {
-			// Check if user_id already exist in db
-			result := db.Where(&User{User_id: update.Message.ReplyToMessage.From.ID, Chat_id: update.Message.Chat.ID}).First(&user)
+			// Check if UserID already exist in db
+			result := db.Where(&User{UserID: update.Message.ReplyToMessage.From.ID, ChatID: update.Message.Chat.ID}).First(&user)
 			if result.Error != nil {
-				// Adding entry if user doesnt exist
+				// Adding entry if user doesn't exist
 				db.Create(&User{
-					User_id:    update.Message.ReplyToMessage.From.ID,
-					Chat_id:    update.Message.Chat.ID,
-					First_name: update.Message.ReplyToMessage.From.FirstName,
-					Last_name:  update.Message.ReplyToMessage.From.LastName,
-					Username:   update.Message.ReplyToMessage.From.UserName,
-					Credit:     0,
+					UserID:    update.Message.ReplyToMessage.From.ID,
+					ChatID:    update.Message.Chat.ID,
+					FirstName: update.Message.ReplyToMessage.From.FirstName,
+					LastName:  update.Message.ReplyToMessage.From.LastName,
+					UserName:  update.Message.ReplyToMessage.From.UserName,
+					Credit:    0,
 				})
 			}
 
-			db.Where(&User{User_id: update.Message.ReplyToMessage.From.ID, Chat_id: update.Message.Chat.ID}).First(&user)
+			db.Where(&User{UserID: update.Message.ReplyToMessage.From.ID, ChatID: update.Message.Chat.ID}).First(&user)
 			if update.Message.Text == "+" {
 				user.Credit += 20
 				reply = Markup("+20") + " Credit, Citizen!\nYou have " + Markup(fmt.Sprint(user.Credit)) + " points"

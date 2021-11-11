@@ -1,10 +1,10 @@
 package main
 
 type User struct {
-	User_id    int `gorm:"primaryKey;autoIncrement:false"`
-	Chat_id    int64 `gorm:"primaryKey;autoIncrement:false"`
-	First_name string
-	Last_name  string
-	Username   string
-	Credit     int
+	UserID    int   `gorm:"primaryKey;autoIncrement:false"`
+	ChatID    int64 `gorm:"primaryKey;autoIncrement:false"`
+	FirstName string
+	LastName  string
+	UserName  string
+	Credit    int
 }
