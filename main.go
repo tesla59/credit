@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 	"strings"
 
 	"github.com/go-ping/ping"
@@ -16,6 +17,7 @@ func main() {
 	var (
 		msg   tgbotapi.MessageConfig
 		user  User
+		users []User
 		reply string
 	)
 
@@ -115,6 +117,23 @@ func main() {
 				text := "Result: " + Markup(fmt.Sprint(stats.AvgRtt))
 
 				msg = tgbotapi.NewMessage(update.Message.Chat.ID, text)
+				msg.ParseMode = tgbotapi.ModeHTML
+				msg.ReplyToMessageID = update.Message.MessageID
+			} else if update.Message.Command() == "rank" {
+				// Sorting data by credit decending order
+				db.Where("chat_id = ?", update.Message.Chat.ID).Order("credit desc").Limit(10).Find(&users)
+
+				var leaderboard string
+
+				for i := 0; i < int(math.Min(10, float64(len(users)))); i++ {
+					// 1. Blue Jeans: 40
+					// 2. Udit Karode: 20
+					leaderboard += fmt.Sprint(i+1) + ". " + users[i].FirstName + " " + users[i].LastName + ": " + fmt.Sprint(users[i].Credit) + "\n"
+				}
+
+				reply = "Leaderboard :\n" + leaderboard
+
+				msg = tgbotapi.NewMessage(update.Message.Chat.ID, reply)
 				msg.ParseMode = tgbotapi.ModeHTML
 				msg.ReplyToMessageID = update.Message.MessageID
 			}
